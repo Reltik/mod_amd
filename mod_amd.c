@@ -233,6 +233,16 @@ static amd_frame_classifier classify_frame(const switch_frame_t *f, const switch
 static switch_bool_t amd_handle_silence_frame(amd_vad_t *vad, const switch_frame_t *f, switch_core_session_t *fs_s)
 {
 	vad->silence_duration += vad->frame_ms;
+    
+    char str_silence_duration[12];
+    char str_initial_silence[12];
+    char str_words[12];
+    char str_voice_duration[12];
+    
+    sprintf(str_silence_duration, "%d", vad->silence_duration);
+    sprintf(str_initial_silence, "%d", globals.initial_silence);
+    sprintf(str_words, "%d", vad->words);
+    sprintf(str_voice_duration, "%d", vad->voice_duration);
 
 	if (vad->silence_duration >= globals.between_words_silence) {
 		if (vad->state != VAD_STATE_IN_SILENCE) {
@@ -256,6 +266,10 @@ static switch_bool_t amd_handle_silence_frame(amd_vad_t *vad, const switch_frame
 		amd_fire_event(AMD_EVENT_MACHINE, fs_s);
 		switch_channel_set_variable(vad->channel, "amd_result", "MACHINE");
 		switch_channel_set_variable(vad->channel, "amd_cause", "INITIALSILENCE");
+        switch_channel_set_variable(vad->channel, "amd_silence_duration", str_silence_duration);
+        switch_channel_set_variable(vad->channel, "amd_initial_silence", str_initial_silence);
+        switch_channel_set_variable(vad->channel, "amd_words", str_words);
+        switch_channel_set_variable(vad->channel, "amd_voice_duration", str_voice_duration);
 		return SWITCH_TRUE;
 	}
 
@@ -269,6 +283,10 @@ static switch_bool_t amd_handle_silence_frame(amd_vad_t *vad, const switch_frame
 		amd_fire_event(AMD_EVENT_HUMAN, fs_s);
 		switch_channel_set_variable(vad->channel, "amd_result", "HUMAN");
 		switch_channel_set_variable(vad->channel, "amd_cause", "HUMAN");
+        switch_channel_set_variable(vad->channel, "amd_silence_duration", str_silence_duration);
+        switch_channel_set_variable(vad->channel, "amd_initial_silence", str_initial_silence);
+        switch_channel_set_variable(vad->channel, "amd_words", str_words);
+        switch_channel_set_variable(vad->channel, "amd_voice_duration", str_voice_duration);
 		return SWITCH_TRUE;
 	}
 
@@ -278,6 +296,16 @@ static switch_bool_t amd_handle_silence_frame(amd_vad_t *vad, const switch_frame
 static switch_bool_t amd_handle_voiced_frame(amd_vad_t *vad, const switch_frame_t *f, switch_core_session_t *fs_s)
 {
 	vad->voice_duration += vad->frame_ms;
+    
+    char str_silence_duration[12];
+    char str_initial_silence[12];
+    char str_words[12];
+    char str_voice_duration[12];
+    
+    sprintf(str_silence_duration, "%d", vad->silence_duration);
+    sprintf(str_initial_silence, "%d", globals.initial_silence);
+    sprintf(str_words, "%d", vad->words);
+    sprintf(str_voice_duration, "%d", vad->voice_duration);
 
 	if (vad->voice_duration >= globals.minimum_word_length && vad->state == VAD_STATE_IN_SILENCE) {
 		vad->words++;
@@ -301,6 +329,10 @@ static switch_bool_t amd_handle_voiced_frame(amd_vad_t *vad, const switch_frame_
 		amd_fire_event(AMD_EVENT_MACHINE, fs_s);
 		switch_channel_set_variable(vad->channel, "amd_result", "MACHINE");
 		switch_channel_set_variable(vad->channel, "amd_cause", "MAXWORDLENGTH");
+        switch_channel_set_variable(vad->channel, "amd_silence_duration", str_silence_duration);
+        switch_channel_set_variable(vad->channel, "amd_initial_silence", str_initial_silence);
+        switch_channel_set_variable(vad->channel, "amd_words", str_words);
+        switch_channel_set_variable(vad->channel, "amd_voice_duration", str_voice_duration);
 		return SWITCH_TRUE;
 	}
 
@@ -314,6 +346,10 @@ static switch_bool_t amd_handle_voiced_frame(amd_vad_t *vad, const switch_frame_
 		amd_fire_event(AMD_EVENT_MACHINE, fs_s);
 		switch_channel_set_variable(vad->channel, "amd_result", "MACHINE");
 		switch_channel_set_variable(vad->channel, "amd_cause", "MAXWORDS");
+        switch_channel_set_variable(vad->channel, "amd_silence_duration", str_silence_duration);
+        switch_channel_set_variable(vad->channel, "amd_initial_silence", str_initial_silence);
+        switch_channel_set_variable(vad->channel, "amd_words", str_words);
+        switch_channel_set_variable(vad->channel, "amd_voice_duration", str_voice_duration);
 		return SWITCH_TRUE;
 	}
 
@@ -327,6 +363,10 @@ static switch_bool_t amd_handle_voiced_frame(amd_vad_t *vad, const switch_frame_
 		amd_fire_event(AMD_EVENT_MACHINE, fs_s);
 		switch_channel_set_variable(vad->channel, "amd_result", "MACHINE");
 		switch_channel_set_variable(vad->channel, "amd_cause", "LONGGREETING");
+        switch_channel_set_variable(vad->channel, "amd_silence_duration", str_silence_duration);
+        switch_channel_set_variable(vad->channel, "amd_initial_silence", str_initial_silence);
+        switch_channel_set_variable(vad->channel, "amd_words", str_words);
+        switch_channel_set_variable(vad->channel, "amd_voice_duration", str_voice_duration);
 		return SWITCH_TRUE;
 	}
 
@@ -439,6 +479,10 @@ SWITCH_STANDARD_APP(amd_start_function)
 				amd_fire_event(AMD_EVENT_NOTSURE, session);
 				switch_channel_set_variable(channel, "amd_result", "NOTSURE");
 				switch_channel_set_variable(channel, "amd_cause", "TOOLONG");
+                //switch_channel_set_variable(channel, "amd_silence_duration", vad->silence_duration);
+                //switch_channel_set_variable(channel, "amd_initial_silence", globals.initial_silence);
+                //switch_channel_set_variable(channel, "amd_words", vad->words);
+                //switch_channel_set_variable(channel, "amd_voice_duration", vad->voice_duration);
 				break;
 			}
 		}
